@@ -58,6 +58,7 @@ public class UpdateService {
 	@GET
 	@Path("/add")
 	public Response addTemperature(@QueryParam("temp0") float temperature) {
+		this.temperature = temperature;
 		return Response.status(200).entity("ok").build();
 	}
 }
