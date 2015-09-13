@@ -12,7 +12,7 @@ import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
 
 public class TelegramBot implements Runnable {
 
-	private static final int INTERVAL = 300000;
+	private static final int INTERVAL = 30000;
 	
 	private float temperature;
 	private String token;
