@@ -12,6 +12,8 @@ import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
 
 public class TelegramBot implements Runnable {
 
+	private static final int INTERVAL = 300000;
+	
 	private float temperature;
 	private String token;
 
@@ -77,7 +79,7 @@ public class TelegramBot implements Runnable {
 		while (!Thread.currentThread().isInterrupted()) {
 			makeRequest(getUpdate, sendMessage);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(INTERVAL);
 			} catch (InterruptedException e) {
 				// whatever
 			}
