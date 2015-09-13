@@ -17,6 +17,7 @@ public class TelegramBot implements Runnable {
 
 	private static final String BASE_URL = "https://api.telegram.org/bot";
 	private static final String METHOD = "getUpdates";
+	private static final String SEND_MESSAGE_METHOD = "sendMessage";
 
 	public TelegramBot(String token) {
 		this.token = token;
@@ -39,7 +40,7 @@ public class TelegramBot implements Runnable {
 
 	private int offset = 0;
 
-	public void makeRequest(WebTarget target) {
+	public void makeRequest(WebTarget target, WebTarget sendTarget) {
 		Request info = new Request();
 		info.setOffset(offset);
 		info.setLimit(5);
@@ -47,16 +48,21 @@ public class TelegramBot implements Runnable {
 
 		Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON_TYPE);
 
-		Response response = invocationBuilder.accept(MediaType.APPLICATION_JSON)
-				.post(Entity.entity(info, MediaType.APPLICATION_JSON), Response.class);
+		TelegramResponse response = invocationBuilder.accept(MediaType.APPLICATION_JSON)
+				.post(Entity.entity(info, MediaType.APPLICATION_JSON), TelegramResponse.class);
 
 		for (Update update : response.getResult()) {
 			Message msg = update.getMessage();
 			if (msg != null) {
 				offset = Math.max(offset, update.getUpdate_id() + 1);
 				if (msg.getFrom().getId() == 130318030) {
-					if(msg.getText().startsWith("/temp")) {
-						System.out.println(temperature);
+					if (msg.getText().startsWith("/temp")) {
+						OutgoingMessage outMsg = new OutgoingMessage();
+						outMsg.setChat_id(msg.getChat().getId());
+						outMsg.setText(String.format("Temperature is %.2f", temperature));
+						Invocation.Builder sendBuilder = sendTarget.request(MediaType.APPLICATION_JSON_TYPE);
+						sendBuilder.accept(MediaType.APPLICATION_JSON)
+								.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON), String.class);
 					}
 				}
 			}
@@ -66,10 +72,10 @@ public class TelegramBot implements Runnable {
 
 	public void run() {
 
-		WebTarget target = createTarget(BASE_URL, token).path(METHOD);
-
+		WebTarget getUpdate = createTarget(BASE_URL, token).path(METHOD);
+		WebTarget sendMessage = createTarget(BASE_URL, token).path(SEND_MESSAGE_METHOD);
 		while (!Thread.currentThread().isInterrupted()) {
-			makeRequest(target);
+			makeRequest(getUpdate, sendMessage);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

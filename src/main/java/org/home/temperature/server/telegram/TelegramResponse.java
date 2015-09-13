@@ -2,7 +2,7 @@ package org.home.temperature.server.telegram;
 
 import java.util.List;
 
-public class Response {
+public class TelegramResponse {
 	private boolean ok;
 
 	private List<Update> result;
