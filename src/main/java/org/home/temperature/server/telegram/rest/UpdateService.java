@@ -1,5 +1,6 @@
 package org.home.temperature.server.telegram.rest;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,6 +21,7 @@ import org.home.temperature.server.telegram.Message;
 import org.home.temperature.server.telegram.OutgoingMessage;
 import org.home.temperature.server.telegram.Update;
 
+@Singleton
 @Path("/")
 public class UpdateService {
 
