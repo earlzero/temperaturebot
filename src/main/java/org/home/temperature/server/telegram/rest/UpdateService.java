@@ -41,7 +41,6 @@ public class UpdateService {
 	}
 
 	@POST
-	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response update(Update update) {
 		Message msg = update.getMessage();
