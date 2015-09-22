@@ -55,7 +55,7 @@ public class UpdateService {
 			OutgoingMessage outMsg = new OutgoingMessage();
 			outMsg.setChat_id(msg.getChat().getId());
 			OffsetDateTime time = OffsetDateTime.now(ZoneId.of("Europe/Moscow"));
-			outMsg.setText(String.format("Temperature is %.2f at", temperature, time.toString()));
+			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, time.toString()));
 			Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 			sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
 					String.class);
