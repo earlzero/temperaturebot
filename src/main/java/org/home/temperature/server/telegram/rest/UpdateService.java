@@ -1,9 +1,8 @@
 package org.home.temperature.server.telegram.rest;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeFormatter;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -32,6 +31,10 @@ public class UpdateService {
 
 	private volatile float temperature;
 
+	private String updateTime;
+
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm yyyy-MM-dd");
+	
 	private WebTarget webTarget;
 
 	private static final String SEND_MESSAGE_METHOD = "sendMessage";
@@ -54,8 +57,7 @@ public class UpdateService {
 		if (msg.getChat().getId() == 130318030) {
 			OutgoingMessage outMsg = new OutgoingMessage();
 			outMsg.setChat_id(msg.getChat().getId());
-			OffsetDateTime time = OffsetDateTime.now(ZoneId.of("Europe/Moscow"));
-			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, time.toString()));
+			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
 			Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 			sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
 					String.class);
@@ -67,6 +69,7 @@ public class UpdateService {
 	@Path("/add")
 	public Response addTemperature(@QueryParam("temp0") float temperature) {
 		this.temperature = temperature;
+		this.updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow")).format(formatter);
 		return Response.status(200).entity("ok").build();
 	}
 }
