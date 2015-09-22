@@ -57,7 +57,11 @@ public class UpdateService {
 		if (msg.getChat().getId() == 130318030) {
 			OutgoingMessage outMsg = new OutgoingMessage();
 			outMsg.setChat_id(msg.getChat().getId());
-			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+			if(updateTime == null) {
+				outMsg.setText("Temperature is not available");
+			} else {
+				outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+			}
 			Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 			sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
 					String.class);
