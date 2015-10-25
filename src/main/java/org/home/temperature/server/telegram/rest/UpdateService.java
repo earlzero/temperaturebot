@@ -24,6 +24,8 @@ import org.home.temperature.server.Main;
 import org.home.temperature.server.telegram.Message;
 import org.home.temperature.server.telegram.OutgoingMessage;
 import org.home.temperature.server.telegram.Update;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Path("/")
@@ -37,12 +39,21 @@ public class UpdateService {
 	
 	private WebTarget webTarget;
 
+	private WebTarget thingspeakTarget;
+	
+	private Logger logger = LoggerFactory.getLogger(UpdateService.class);
+	
 	private static final String SEND_MESSAGE_METHOD = "sendMessage";
 
-	private WebTarget createTarget(String baseUrl, String token) {
+	private WebTarget createTarget(String baseUrl, String telegramToken) {
 		ClientConfig clientConfig = new ClientConfig(new MoxyJsonFeature());
 		Client client = ClientBuilder.newClient(clientConfig);
-		String url = String.join("", baseUrl, token);
+		String url = String.join("", baseUrl, telegramToken);
+		return client.target(url);
+	}
+	
+	private WebTarget createThingspeakTarget(String url) {
+		Client client = ClientBuilder.newClient();
 		return client.target(url);
 	}
 
@@ -54,6 +65,7 @@ public class UpdateService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response update(Update update) {
 		Message msg = update.getMessage();
+		logger.info("" + msg.getChat().getId());
 		if (msg.getChat().getId() == 130318030) {
 			OutgoingMessage outMsg = new OutgoingMessage();
 			outMsg.setChat_id(msg.getChat().getId());
@@ -75,5 +87,9 @@ public class UpdateService {
 		this.temperature = temperature;
 		this.updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow")).format(formatter);
 		return Response.status(200).entity("ok").build();
+	}
+	
+	private void sendTemperature() {
+		
 	}
 }
