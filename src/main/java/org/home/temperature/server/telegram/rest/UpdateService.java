@@ -69,6 +69,7 @@ public class UpdateService {
 		switch (msg.getChat().getId()) {
 		case 130318030:
 		case 76305315:
+		case 113136451:
 			if (msg.getText().equals("/temp")) {
 				OutgoingMessage outMsg = new OutgoingMessage();
 				outMsg.setChat_id(msg.getChat().getId());
