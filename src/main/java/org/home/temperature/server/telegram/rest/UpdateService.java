@@ -36,13 +36,13 @@ public class UpdateService {
 	private String updateTime;
 
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm yyyy-MM-dd");
-	
+
 	private WebTarget webTarget;
 
 	private WebTarget thingspeakTarget;
-	
+
 	private Logger logger = LoggerFactory.getLogger(UpdateService.class);
-	
+
 	private static final String SEND_MESSAGE_METHOD = "sendMessage";
 
 	private WebTarget createTarget(String baseUrl, String telegramToken) {
@@ -51,7 +51,7 @@ public class UpdateService {
 		String url = String.join("", baseUrl, telegramToken);
 		return client.target(url);
 	}
-	
+
 	private WebTarget createThingspeakTarget(String url) {
 		Client client = ClientBuilder.newClient();
 		return client.target(url);
@@ -66,17 +66,23 @@ public class UpdateService {
 	public Response update(Update update) {
 		Message msg = update.getMessage();
 		logger.info("" + msg.getChat().getId());
-		if (msg.getChat().getId() == 130318030) {
-			OutgoingMessage outMsg = new OutgoingMessage();
-			outMsg.setChat_id(msg.getChat().getId());
-			if(updateTime == null) {
-				outMsg.setText("Temperature is not available");
-			} else {
-				outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+		switch (msg.getChat().getId()) {
+		case 130318030:
+		case 76305315:
+			if (msg.getText().equals("/temp")) {
+				OutgoingMessage outMsg = new OutgoingMessage();
+				outMsg.setChat_id(msg.getChat().getId());
+				if (updateTime == null) {
+					outMsg.setText("Temperature is not available");
+				} else {
+					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+				}
+				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+				sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
+						String.class);
 			}
-			Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-			sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
-					String.class);
+			break;
+		default:
 		}
 		return Response.status(201).entity("ok").build();
 	}
@@ -88,8 +94,8 @@ public class UpdateService {
 		this.updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow")).format(formatter);
 		return Response.status(200).entity("ok").build();
 	}
-	
+
 	private void sendTemperature() {
-		
+
 	}
 }
