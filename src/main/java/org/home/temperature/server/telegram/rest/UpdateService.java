@@ -27,6 +27,10 @@ import org.home.temperature.server.telegram.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * http://stackoverflow.com/questions/33858927/how-to-obtain-the-chat-id-of-a-private-telegram-channel
+ */
+
 @Singleton
 @Path("/")
 public class UpdateService {
