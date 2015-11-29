@@ -1,12 +1,12 @@
 package org.home.temperature.server.telegram;
 
 public class OutgoingMessage {
-	private int chat_id;
+	private String chat_id;
 	private String text;
-	public int getChat_id() {
+	public String getChat_id() {
 		return chat_id;
 	}
-	public void setChat_id(int chat_id) {
+	public void setChat_id(String chat_id) {
 		this.chat_id = chat_id;
 	}
 	public String getText() {

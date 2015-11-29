@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 @Path("/")
 public class UpdateService {
 
+	private static final String CHANNEL = "@ezflat";
+	
 	private volatile float temperature;
 
 	private String updateTime;
@@ -72,7 +74,18 @@ public class UpdateService {
 		case 113136451:
 			if (msg.getText().equals("/temp")) {
 				OutgoingMessage outMsg = new OutgoingMessage();
-				outMsg.setChat_id(msg.getChat().getId());
+				outMsg.setChat_id(Integer.toString(msg.getChat().getId()));
+				if (updateTime == null) {
+					outMsg.setText("Temperature is not available");
+				} else {
+					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+				}
+				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+				sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
+						String.class);
+			} else if(msg.getText().equals("/tempchannel")) {
+				OutgoingMessage outMsg = new OutgoingMessage();
+				outMsg.setChat_id(CHANNEL);
 				if (updateTime == null) {
 					outMsg.setText("Temperature is not available");
 				} else {
