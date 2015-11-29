@@ -76,7 +76,6 @@ public class UpdateService {
 				OutgoingMessage outMsg = new OutgoingMessage();
 
 				outMsg.setChat_id(Integer.toString(msg.getChat().getId()));
-				outMsg.setChat_id(CHANNEL);
 				if (updateTime == null) {
 					outMsg.setText("Temperature is not available");
 				} else {
@@ -94,9 +93,9 @@ public class UpdateService {
 					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
 				}
 				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-				Object o = sendBuilder.accept(MediaType.APPLICATION_JSON)
-						.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON), String.class);
-				System.out.println(o);
+				Response r = sendBuilder.accept(MediaType.APPLICATION_JSON)
+						.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON));
+				logger.info("" + r.getStatus());
 			}
 			break;
 		default:
