@@ -74,7 +74,9 @@ public class UpdateService {
 		case 113136451:
 			if (msg.getText().equals("/temp")) {
 				OutgoingMessage outMsg = new OutgoingMessage();
+
 				outMsg.setChat_id(Integer.toString(msg.getChat().getId()));
+				outMsg.setChat_id(CHANNEL);
 				if (updateTime == null) {
 					outMsg.setText("Temperature is not available");
 				} else {
