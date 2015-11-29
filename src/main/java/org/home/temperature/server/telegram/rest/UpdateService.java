@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 @Path("/")
 public class UpdateService {
 
-	private static final String CHANNEL = "@ezflat";
-
 	private volatile float temperature;
 
 	private String updateTime;
@@ -73,30 +71,9 @@ public class UpdateService {
 		case 76305315:
 		case 113136451:
 			if (msg.getText().equals("/temp")) {
-				OutgoingMessage outMsg = new OutgoingMessage();
-
-				outMsg.setChat_id(Integer.toString(msg.getChat().getId()));
-				if (updateTime == null) {
-					outMsg.setText("Temperature is not available");
-				} else {
-					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
-				}
-				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-				sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
-						String.class);
+				sendMessage(Integer.toString(msg.getChat().getId()));
 			} else if (msg.getText().equals("/tempchannel")) {
-				OutgoingMessage outMsg = new OutgoingMessage();
-				outMsg.setChat_id(CHANNEL);
-				if (updateTime == null) {
-					outMsg.setText("Temperature is not available");
-				} else {
-					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
-				}
-				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-				Response r = sendBuilder.accept(MediaType.APPLICATION_JSON)
-						.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON));
-				logger.info("" + r.getStatus());
-				logger.info(r.readEntity(String.class));
+				sendMessage(System.getProperty("telegram.channel"));
 			}
 			break;
 		default:
@@ -112,4 +89,19 @@ public class UpdateService {
 		return Response.status(200).entity("ok").build();
 	}
 
+	
+	private void sendMessage(String destination) {
+		OutgoingMessage outMsg = new OutgoingMessage();
+		outMsg.setChat_id(destination);
+		if (updateTime == null) {
+			outMsg.setText("Temperature is not available");
+		} else {
+			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+		}
+		Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
+		Response r = sendBuilder.accept(MediaType.APPLICATION_JSON)
+				.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON));
+		logger.info("" + r.getStatus());
+
+	}
 }
