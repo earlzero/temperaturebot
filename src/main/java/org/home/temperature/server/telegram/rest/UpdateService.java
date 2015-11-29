@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public class UpdateService {
 
 	private static final String CHANNEL = "@ezflat";
-	
+
 	private volatile float temperature;
 
 	private String updateTime;
@@ -83,7 +83,7 @@ public class UpdateService {
 				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 				sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
 						String.class);
-			} else if(msg.getText().equals("/tempchannel")) {
+			} else if (msg.getText().equals("/tempchannel")) {
 				OutgoingMessage outMsg = new OutgoingMessage();
 				outMsg.setChat_id(CHANNEL);
 				if (updateTime == null) {
@@ -92,9 +92,9 @@ public class UpdateService {
 					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
 				}
 				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-				Object o = sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
-						String.class);
-				logger.info(o.toString());
+				Object o = sendBuilder.accept(MediaType.APPLICATION_JSON)
+						.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON), String.class);
+				System.out.println(o);
 			}
 			break;
 		default:
@@ -110,7 +110,4 @@ public class UpdateService {
 		return Response.status(200).entity("ok").build();
 	}
 
-	private void sendTemperature() {
-
-	}
 }
