@@ -96,7 +96,7 @@ public class UpdateService {
 				Response r = sendBuilder.accept(MediaType.APPLICATION_JSON)
 						.post(Entity.entity(outMsg, MediaType.APPLICATION_JSON));
 				logger.info("" + r.getStatus());
-				logger.info(r.toString());
+				logger.info(r.getEntity());
 			}
 			break;
 		default:
