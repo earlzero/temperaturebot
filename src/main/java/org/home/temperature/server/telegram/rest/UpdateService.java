@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 @Path("/")
 public class UpdateService {
 
-	private static final String CHANNEL = "@ezflat";
+	private static final String CHANNEL = "ezflat";
 
 	private volatile float temperature;
 
