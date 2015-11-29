@@ -92,8 +92,9 @@ public class UpdateService {
 					outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
 				}
 				Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
-				sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
+				Object o = sendBuilder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(outMsg, MediaType.APPLICATION_JSON),
 						String.class);
+				logger.info(o.toString());
 			}
 			break;
 		default:
