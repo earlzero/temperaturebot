@@ -35,15 +35,42 @@ import org.slf4j.LoggerFactory;
 @Path("/")
 public class UpdateService {
 
-	private volatile float temperature;
+	class SensorInfo {
+		private float temperature;
+		private OffsetDateTime updated;
+
+		public SensorInfo(float temperature, OffsetDateTime updated) {
+			this.temperature = temperature;
+			this.updated = updated;
+		}
+
+		public float getTemperature() {
+			return temperature;
+		}
+
+		public void setTemperature(float temperature) {
+			this.temperature = temperature;
+		}
+
+		public OffsetDateTime getUpdated() {
+			return updated;
+		}
+
+		public void setUpdated(OffsetDateTime updated) {
+			this.updated = updated;
+		}
+
+	}
+
+	private static final int COUNT = 2;
+
+	private volatile SensorInfo[] temperature = new SensorInfo[COUNT];
 
 	private String updateTime;
 
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm yyyy-MM-dd");
 
 	private WebTarget webTarget;
-
-	private WebTarget thingspeakTarget;
 
 	private Logger logger = LoggerFactory.getLogger(UpdateService.class);
 
@@ -53,11 +80,6 @@ public class UpdateService {
 		ClientConfig clientConfig = new ClientConfig(new MoxyJsonFeature());
 		Client client = ClientBuilder.newClient(clientConfig);
 		String url = String.join("", baseUrl, telegramToken);
-		return client.target(url);
-	}
-
-	private WebTarget createThingspeakTarget(String url) {
-		Client client = ClientBuilder.newClient();
 		return client.target(url);
 	}
 
@@ -74,33 +96,49 @@ public class UpdateService {
 		case 130318030:
 		case 76305315:
 		case 113136451:
-			if (msg.getText().equals("/temp")) {
-				sendMessage(Integer.toString(msg.getChat().getId()));
-			} else if (msg.getText().equals("/tempchannel")) {
-				sendMessage(System.getProperty("telegram.channel"));
-			}
+			handleMessage(msg);
 			break;
 		default:
 		}
 		return Response.status(201).entity("ok").build();
 	}
 
+	private void handleMessage(Message msg) {
+		if (msg.getText().equals("/gryazi")) {
+			sendMessage(Integer.toString(msg.getChat().getId()), 0);
+		} else if (msg.getText().equals("/gryazichannel")) {
+			sendMessage(System.getProperty("telegram.channel"), 0);
+		} else if (msg.getText().equals("/dublin")) {
+			sendMessage(Integer.toString(msg.getChat().getId()), 1);
+		} else if (msg.getText().equals("/dublinchannel")) {
+			sendMessage(System.getProperty("telegram.channel"), 0);
+		}
+	}
+
 	@GET
 	@Path("/add")
-	public Response addTemperature(@QueryParam("temp0") float temperature) {
-		this.temperature = temperature;
-		this.updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow")).format(formatter);
+	public Response addTemperature(@QueryParam("temp0") Float temperature0, @QueryParam("temp1") Float temperature1) {
+
+		OffsetDateTime updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow"));
+
+		if (temperature != null) {
+			this.temperature[0] = new SensorInfo(temperature0, updateTime);
+		}
+		if (temperature1 != null) {
+			this.temperature[1] = new SensorInfo(temperature0, updateTime);
+		}
 		return Response.status(200).entity("ok").build();
 	}
 
-	
-	private void sendMessage(String destination) {
+	private void sendMessage(String destination, int sensorId) {
+		SensorInfo sensorInfo = temperature[sensorId];
 		OutgoingMessage outMsg = new OutgoingMessage();
 		outMsg.setChat_id(destination);
-		if (updateTime == null) {
+		if (sensorInfo == null) {
 			outMsg.setText("Temperature is not available");
 		} else {
-			outMsg.setText(String.format("Temperature is %.2f at %s", temperature, updateTime));
+			outMsg.setText(String.format("Temperature is %.2f at %s", sensorInfo.getTemperature(),
+					sensorInfo.getUpdated().format(formatter)));
 		}
 		Invocation.Builder sendBuilder = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 		Response r = sendBuilder.accept(MediaType.APPLICATION_JSON)
