@@ -3,6 +3,7 @@ package org.home.temperature.server.telegram.rest;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -15,8 +16,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
@@ -84,7 +87,8 @@ public class UpdateService {
 	}
 
 	public UpdateService() {
-		webTarget = createTarget(Main.BASE_URL, System.getProperty("telegram.token")).path(SEND_MESSAGE_METHOD);
+		 webTarget = createTarget(Main.BASE_URL,
+		 System.getProperty("telegram.token")).path(SEND_MESSAGE_METHOD);
 	}
 
 	@POST
@@ -117,17 +121,26 @@ public class UpdateService {
 
 	@GET
 	@Path("/add")
-	public Response addTemperature(@QueryParam("temp0") Float temperature0, @QueryParam("temp1") Float temperature1) {
+	public Response addTemperature(@Context UriInfo context) {
 
-		OffsetDateTime updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow"));
+		Optional<String> temperature0 = Optional.ofNullable(context.getQueryParameters().get("temp0"))
+				.flatMap(l -> l.stream().findFirst());
+		Optional<String> temperature1 = Optional.ofNullable(context.getQueryParameters().get("temp1"))
+				.flatMap(l -> l.stream().findFirst());
 
-		if (temperature != null) {
-			this.temperature[0] = new SensorInfo(temperature0, updateTime);
-		}
-		if (temperature1 != null) {
-			this.temperature[1] = new SensorInfo(temperature0, updateTime);
-		}
+		temperature0.ifPresent(t -> {
+			updateTemperature(0, t);
+		});
+
+		temperature1.ifPresent(t -> {
+			updateTemperature(1, t);
+		});
 		return Response.status(200).entity("ok").build();
+	}
+
+	private void updateTemperature(int index, String value) {
+		OffsetDateTime updateTime = OffsetDateTime.now(ZoneId.of("Europe/Moscow"));
+		this.temperature[index] = new SensorInfo(Float.valueOf(value), updateTime);
 	}
 
 	private void sendMessage(String destination, int sensorId) {
